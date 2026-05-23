@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -14,6 +15,7 @@ import {
   Stethoscope,
   Workflow,
 } from "lucide-react";
+import { AuthFlowModal, type AuthMode } from "@/components/AuthFlowModal";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -162,6 +164,8 @@ function DashboardPreview() {
 }
 
 export function CardioGuardLanding() {
+  const [authMode, setAuthMode] = useState<AuthMode | null>(null);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/60 to-white text-slate-600">
       <header className="sticky top-0 z-50 border-b border-white/70 bg-white/80 backdrop-blur-xl">
@@ -182,12 +186,29 @@ export function CardioGuardLanding() {
             ))}
           </div>
 
-          <a
-            href="#app"
-            className="inline-flex items-center justify-center rounded-2xl bg-[#2563EB] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/25 focus:outline-none focus:ring-4 focus:ring-blue-200"
-          >
-            Go to App
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAuthMode("login")}
+              className="hidden rounded-2xl px-4 py-3 text-sm font-black text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-[#2563EB] focus:outline-none focus:ring-4 focus:ring-blue-100 sm:inline-flex"
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuthMode("register")}
+              className="hidden rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-[#1E293B] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#2563EB] hover:text-[#2563EB] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 md:inline-flex"
+            >
+              Register
+            </button>
+            <button
+              type="button"
+              onClick={() => setAuthMode("login")}
+              className="inline-flex items-center justify-center rounded-2xl bg-[#2563EB] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/25 focus:outline-none focus:ring-4 focus:ring-blue-200"
+            >
+              Go to App
+            </button>
+          </div>
         </nav>
       </header>
 
@@ -222,13 +243,14 @@ export function CardioGuardLanding() {
               </p>
 
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-                <a
-                  href="#pricing"
+                <button
+                  type="button"
+                  onClick={() => setAuthMode("register")}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#2563EB] px-7 py-4 text-base font-black text-white shadow-xl shadow-blue-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-600/30 focus:outline-none focus:ring-4 focus:ring-blue-200"
                 >
                   Request a Demo
                   <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                </a>
+                </button>
                 <a
                   href="#features"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white/80 px-7 py-4 text-base font-black text-[#1E293B] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#2563EB] hover:text-[#2563EB] hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-100"
@@ -237,6 +259,14 @@ export function CardioGuardLanding() {
                   Watch Video
                 </a>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setAuthMode("login")}
+                className="mt-5 text-sm font-black text-[#2563EB] transition-all duration-200 hover:text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              >
+                Already have access? Login to your clinical dashboard
+              </button>
 
               <div className="mt-10 grid max-w-xl grid-cols-3 gap-4">
                 {[
@@ -386,6 +416,12 @@ export function CardioGuardLanding() {
           </div>
         </div>
       </footer>
+
+      <AuthFlowModal
+        initialMode={authMode ?? "login"}
+        isOpen={authMode !== null}
+        onClose={() => setAuthMode(null)}
+      />
     </div>
   );
 }
