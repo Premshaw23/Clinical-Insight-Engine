@@ -212,6 +212,11 @@ npm run migrate
 npm run db:migrate
 ```
 
+The server runs a PostgreSQL preflight check before mounting routes. If startup
+prints `Database startup check failed`, confirm that PostgreSQL is running,
+`DATABASE_URL` points to the same database, and the migration command above has
+created the required tables.
+
 ### 6️⃣ Python Environment Setup
 
 #### Linux/macOS
@@ -270,7 +275,7 @@ py -c "from analyze import create_synthetic_data; create_synthetic_data()"
 ```bash
 npm run dev
 ```
-The Express server runs both the API and Vite-powered React app. It defaults to `http://localhost:5000` unless `PORT` is set in `.env`; use `PORT=3000` if you want the local URL to match `NEXT_PUBLIC_APP_URL=http://localhost:3000`.
+Frontend runs at: `http://localhost:5173`
 
 #### ML Pipeline (Training)
 ```bash
