@@ -18,6 +18,11 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   app.get("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    let html = fs.readFileSync(
+      path.resolve(distPath, "index.html"),
+      "utf-8",
+    );
+    html = html.replace(/<script /g, `<script nonce="${res.locals.cspNonce}" `);
+    res.type("html").send(html);
   });
 }
