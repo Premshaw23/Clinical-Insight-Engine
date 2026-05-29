@@ -13,11 +13,11 @@ export interface IStorage {
 }
 
 export type AssessmentCreateInput = InsertAssessment & {
-  riskScore: string;
+  riskScore: number;
   riskCategory: string;
   factors: AssessmentFactor[];
   confidenceInterval?: string;
-  modelConfidence?: string;
+  modelConfidence?: number;
 };
 
 export class DatabaseStorage implements IStorage {

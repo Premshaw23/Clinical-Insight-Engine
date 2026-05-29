@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,16 +15,16 @@ export const assessments = pgTable("assessments", {
   hypertension: boolean("hypertension").notNull(),
   heartDisease: boolean("heart_disease").notNull(),
   smokingHistory: text("smoking_history").notNull(), // 'never', 'current', 'former', etc.
-  bmi: text("bmi").notNull(),
-  hba1cLevel: text("hba1c_level").notNull(),
-  bloodGlucoseLevel: text("blood_glucose_level").notNull(),
+  bmi: doublePrecision("bmi").notNull(),
+  hba1cLevel: doublePrecision("hba1c_level").notNull(),
+  bloodGlucoseLevel: doublePrecision("blood_glucose_level").notNull(),
   
   // Model Outputs
-  riskScore: text("risk_score").notNull(), // 0-100 percentage
+  riskScore: doublePrecision("risk_score").notNull(), // 0-100 percentage
   riskCategory: text("risk_category").notNull(), // 'LOW', 'MODERATE', 'HIGH'
   factors: jsonb("factors").$type<AssessmentFactor[]>().notNull(),
   confidenceInterval: jsonb("confidence_interval").$type<string | null>(),
-  modelConfidence: text("model_confidence"),
+  modelConfidence: doublePrecision("model_confidence"),
   
   createdAt: timestamp("created_at").defaultNow(),
 });
