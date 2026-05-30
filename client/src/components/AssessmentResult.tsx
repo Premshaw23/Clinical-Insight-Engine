@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { type AssessmentResponse } from "@shared/routes";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
-import { AlertCircle, CheckCircle2, Info, Activity, Stethoscope, UserCircle, TrendingDown, TrendingUp } from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, Activity, Stethoscope, UserCircle, TrendingDown, TrendingUp, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface AssessmentResultProps {
@@ -50,6 +50,16 @@ const getFactorReason = (factor: RiskFactor) => {
 
 export function AssessmentResult({ assessment }: AssessmentResultProps) {
   const [view, setView] = useState<"patient" | "clinician">("patient");
+
+  const exportToJson = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(assessment, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `diabetes-risk-assessment-${assessment.id ?? "report"}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
 
   const getRiskColor = (category: string) => {
     switch (category.toUpperCase()) {
@@ -109,29 +119,40 @@ export function AssessmentResult({ assessment }: AssessmentResultProps) {
       className="bg-card rounded-2xl shadow-xl shadow-black/5 border border-border/60 overflow-hidden flex flex-col"
     >
       {/* Header/Tabs */}
-      <div className="flex border-b border-border/60 bg-muted/30">
-        <button
-          onClick={() => setView("patient")}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
-            view === "patient" 
-              ? "text-primary border-b-2 border-primary bg-background" 
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          <UserCircle className="w-4 h-4" />
-          Patient View
-        </button>
-        <button
-          onClick={() => setView("clinician")}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
-            view === "clinician" 
-              ? "text-primary border-b-2 border-primary bg-background" 
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          <Stethoscope className="w-4 h-4" />
-          Clinician View
-        </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/60 bg-muted/30 px-4">
+        <div className="flex flex-1">
+          <button
+            onClick={() => setView("patient")}
+            className={`flex-1 sm:flex-none px-6 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
+              view === "patient" 
+                ? "text-primary border-b-2 border-primary bg-background" 
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            }`}
+          >
+            <UserCircle className="w-4 h-4" />
+            Patient View
+          </button>
+          <button
+            onClick={() => setView("clinician")}
+            className={`flex-1 sm:flex-none px-6 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
+              view === "clinician" 
+                ? "text-primary border-b-2 border-primary bg-background" 
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            }`}
+          >
+            <Stethoscope className="w-4 h-4" />
+            Clinician View
+          </button>
+        </div>
+        <div className="py-2 sm:py-0 flex justify-end">
+          <button
+            onClick={exportToJson}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-200"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export JSON
+          </button>
+        </div>
       </div>
 
       <div className="p-6 md:p-8">
