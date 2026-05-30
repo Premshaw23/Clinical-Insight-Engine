@@ -24,7 +24,7 @@ export type AssessmentCreateInput = InsertAssessment & {
   factors: AssessmentFactor[];
   confidenceInterval?: string;
   modelConfidence?: number;
-  createdBy?: string;
+  createdBy: string;
 };
 
 export class DatabaseStorage implements IStorage {
@@ -38,7 +38,8 @@ export class DatabaseStorage implements IStorage {
     let query = db
       .select()
       .from(assessments)
-      .orderBy(desc(assessments.createdAt));
+      .orderBy(desc(assessments.createdAt))
+      .$dynamic();
 
     if (createdBy) {
       query = query.where(eq(assessments.createdBy, createdBy));

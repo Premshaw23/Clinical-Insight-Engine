@@ -1,10 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
-import { randomInt, randomBytes, scryptSync, timingSafeEqual } from "crypto";
-import { getDb } from "./db";
-import { users, emailVerificationTokens } from "@shared/schema";
-import { eq, and, gte } from "drizzle-orm";
-import { sendVerificationCode } from "./email";
-import { rateLimit } from "express-rate-limit";
+import { randomInt } from "crypto";
+import bcrypt from "bcrypt";
 
 // Extend express-session to include user data
 declare module "express-session" {
@@ -16,6 +12,27 @@ declare module "express-session" {
     };
   }
 }
+
+interface RegisteredUser {
+  fullName: string;
+  email: string;
+  passwordHash: string;
+  licenseNumber: string;
+}
+
+function hashPassword(password: string): string {
+  return bcrypt.hashSync(password, 10);
+}
+
+function verifyPassword(password: string, hash: string): boolean {
+  return bcrypt.compareSync(password, hash);
+}
+
+/**
+ * In-memory store for registered users.
+ * In production, this should be replaced with a persistent database.
+ */
+const registeredUsers = new Map<string, RegisteredUser>();
 
 interface PendingOtp {
   otp: string;
