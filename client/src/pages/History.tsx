@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useAssessments } from "@/hooks/use-assessments";
 import { format, isValid } from "date-fns";
 import { Loader2, Search, Calendar, User, Activity } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatusPill from "@/components/ui/StatusPill";
 import ConfidenceRange from "@/components/ui/ConfidenceRange";
 import { FileText, RotateCw } from "lucide-react";
@@ -10,6 +10,10 @@ import { useLocation } from "wouter";
 import { advancedFilter } from "@/utils/search_filters";
 
 export default function History() {
+  useEffect(() => {
+    document.title = "Clinical Insight Engine - Assessment History";
+  }, []);
+
   const { data: assessments, isLoading, error } = useAssessments();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("date-desc");

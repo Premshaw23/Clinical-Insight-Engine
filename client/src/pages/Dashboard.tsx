@@ -50,6 +50,10 @@ function getRiskBadgeClass(category?: string) {
 }
 
 export default function Dashboard() {
+  useEffect(() => {
+    document.title = "Clinical Insight Engine - Dashboard";
+  }, []);
+
   const [result, setResult] = useState<AssessmentResponse | null>(null);
   const [preview, setPreview] = useState<AssessmentPreviewResponse | null>(null);
   const [previewPending, setPreviewPending] = useState(false);
