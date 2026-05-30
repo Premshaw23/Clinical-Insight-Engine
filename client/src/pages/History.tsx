@@ -147,9 +147,13 @@ export default function History() {
             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4 text-muted-foreground">
               <Activity className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">No Assessments Found</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              {searchTerm ? "No Matching Records" : "No Assessments Found"}
+            </h3>
             <p className="text-muted-foreground max-w-md">
-              There are no patient assessments matching your criteria. Go to the dashboard to create a new assessment.
+              {searchTerm 
+                ? `No patient records matching "${searchTerm}" were found. Try refining your search terms.` 
+                : "There are no patient assessments matching your criteria. Go to the dashboard to create a new assessment."}
             </p>
           </div>
         ) : (
