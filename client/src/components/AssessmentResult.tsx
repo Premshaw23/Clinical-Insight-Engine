@@ -109,28 +109,42 @@ export function AssessmentResult({ assessment }: AssessmentResultProps) {
       className="bg-card rounded-2xl shadow-xl shadow-black/5 border border-border/60 overflow-hidden flex flex-col"
     >
       {/* Header/Tabs */}
-      <div className="flex border-b border-border/60 bg-muted/30">
+      <div className="relative flex border-b border-border/60 bg-muted/30 p-1.5 gap-1.5">
         <button
           onClick={() => setView("patient")}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
+          className={`relative flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold z-10 transition-colors rounded-xl focus:outline-none ${
             view === "patient" 
-              ? "text-primary border-b-2 border-primary bg-background" 
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "text-primary" 
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <UserCircle className="w-4 h-4" />
           Patient View
+          {view === "patient" && (
+            <motion.div
+              layoutId="activeTab"
+              className="absolute inset-0 bg-background rounded-xl border border-border/50 shadow-sm z-[-1]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
         <button
           onClick={() => setView("clinician")}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
+          className={`relative flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold z-10 transition-colors rounded-xl focus:outline-none ${
             view === "clinician" 
-              ? "text-primary border-b-2 border-primary bg-background" 
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "text-primary" 
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Stethoscope className="w-4 h-4" />
           Clinician View
+          {view === "clinician" && (
+            <motion.div
+              layoutId="activeTab"
+              className="absolute inset-0 bg-background rounded-xl border border-border/50 shadow-sm z-[-1]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
       </div>
 
