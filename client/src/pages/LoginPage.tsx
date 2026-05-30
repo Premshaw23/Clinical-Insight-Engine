@@ -194,7 +194,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6">
-          Clinical Insight Engine © 2026 · Frontend UI only
+          Clinical Insight Engine © {new Date().getFullYear()} · Frontend UI only
         </p>
       </div>
     </div>
