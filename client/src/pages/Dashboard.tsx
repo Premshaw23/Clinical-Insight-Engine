@@ -26,6 +26,9 @@ type FormData = z.infer<typeof formSchema>;
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[#1E293B] placeholder-slate-400 shadow-sm outline-none transition-all duration-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
 
+const getInputClass = (hasError: boolean) =>
+  `${inputClass} ${hasError ? "border-red-500 focus:border-red-500 focus:ring-red-100 ring-2 ring-red-500/20" : ""}`;
+
 const labelClass = "text-sm font-bold text-[#1E293B]";
 
 const sectionHeadingClass =
@@ -250,7 +253,7 @@ export default function Dashboard() {
                     <div className="mt-4 space-y-4">
                       <div className="space-y-2">
                         <label className={labelClass}>Gender</label>
-                        <div className="grid grid-cols-3 gap-1 rounded-2xl bg-slate-100 p-1">
+                        <div className={`grid grid-cols-3 gap-1 rounded-2xl bg-slate-100 p-1 transition-all duration-200 ${errors.gender ? "ring-2 ring-red-500 bg-red-50/30" : ""}`}>
                           {["Male", "Female", "Other"].map((g) => (
                             <label key={g} className="flex-1 cursor-pointer">
                               <input type="radio" value={g} {...register("gender")} className="peer sr-only" />
@@ -277,13 +280,13 @@ export default function Dashboard() {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <input type="number" {...register("age")} className={inputClass} placeholder="e.g. 45" />
+                        <input type="number" {...register("age")} className={getInputClass(!!errors.age)} placeholder="e.g. 45" />
                         {errors.age && <p className="text-sm text-red-600 mt-1">{errors.age.message}</p>}
                       </div>
 
                       <div className="space-y-2">
                         <label className={labelClass}>Smoking History</label>
-                        <select {...register("smokingHistory")} className={`${inputClass} appearance-none`}>
+                        <select {...register("smokingHistory")} className={`${getInputClass(!!errors.smokingHistory)} appearance-none`}>
                           <option value="never">never</option>
                           <option value="No Info">No Info</option>
                           <option value="current">current</option>
@@ -320,7 +323,7 @@ export default function Dashboard() {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <input type="number" step="0.1" {...register("bmi")} className={inputClass} placeholder="e.g. 25.0" />
+                        <input type="number" step="0.1" {...register("bmi")} className={getInputClass(!!errors.bmi)} placeholder="e.g. 25.0" />
                         {errors.bmi && <p className="text-sm text-red-600 mt-1">{errors.bmi.message}</p>}
                       </div>
 
@@ -343,7 +346,7 @@ export default function Dashboard() {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <input type="number" step="0.1" {...register("hba1cLevel")} className={inputClass} placeholder="e.g. 5.7" />
+                        <input type="number" step="0.1" {...register("hba1cLevel")} className={getInputClass(!!errors.hba1cLevel)} placeholder="e.g. 5.7" />
                         {errors.hba1cLevel && <p className="text-sm text-red-600 mt-1">{errors.hba1cLevel.message}</p>}
                       </div>
 
@@ -366,7 +369,7 @@ export default function Dashboard() {
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <input type="number" {...register("bloodGlucoseLevel")} className={inputClass} placeholder="e.g. 100" />
+                        <input type="number" {...register("bloodGlucoseLevel")} className={getInputClass(!!errors.bloodGlucoseLevel)} placeholder="e.g. 100" />
                         {errors.bloodGlucoseLevel && <p className="text-sm text-red-600 mt-1">{errors.bloodGlucoseLevel.message}</p>}
                       </div>
                     </div>
