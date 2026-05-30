@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, uuid, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, doublePrecision, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,19 +15,20 @@ export const assessments = pgTable("assessments", {
   hypertension: boolean("hypertension").notNull(),
   heartDisease: boolean("heart_disease").notNull(),
   smokingHistory: text("smoking_history").notNull(), // 'never', 'current', 'former', etc.
-  bmi: text("bmi").notNull(),
-  hba1cLevel: text("hba1c_level").notNull(),
-  bloodGlucoseLevel: text("blood_glucose_level").notNull(),
+  bmi: doublePrecision("bmi").notNull(),
+  hba1cLevel: doublePrecision("hba1c_level").notNull(),
+  bloodGlucoseLevel: doublePrecision("blood_glucose_level").notNull(),
   
   // Model Outputs
-  riskScore: text("risk_score").notNull(), // 0-100 percentage
+  riskScore: doublePrecision("risk_score").notNull(), // 0-100 percentage
   riskCategory: text("risk_category").notNull(), // 'LOW', 'MODERATE', 'HIGH'
   factors: jsonb("factors").$type<AssessmentFactor[]>().notNull(),
   confidenceInterval: jsonb("confidence_interval").$type<string | null>(),
-  modelConfidence: text("model_confidence"),
+  modelConfidence: doublePrecision("model_confidence"),
   
   createdBy: text("created_by"),
   createdAt: timestamp("created_at").defaultNow(),
+  userId: text("user_id"),
 });
 
 export const insertAssessmentSchema = createInsertSchema(assessments, {
@@ -36,11 +37,12 @@ export const insertAssessmentSchema = createInsertSchema(assessments, {
   hypertension: z.boolean().default(false),
   heartDisease: z.boolean().default(false),
   smokingHistory: z.enum(["never", "No Info", "current", "former"], { required_error: "Please select smoking history" }),
-  bmi: z.coerce.number().min(10, "BMI must be between 10 and 60").max(60, "BMI must be between 10 and 60").transform(String),
-  hba1cLevel: z.coerce.number().min(3, "HbA1c must be between 3 and 15").max(15, "HbA1c must be between 3 and 15").transform(String),
-  bloodGlucoseLevel: z.coerce.number().min(50, "Blood glucose must be between 50 and 400").max(400, "Blood glucose must be between 50 and 400").transform(String),
+  bmi: z.coerce.number().min(10, "BMI must be between 10 and 60").max(60, "BMI must be between 10 and 60"),
+  hba1cLevel: z.coerce.number().min(3, "HbA1c must be between 3 and 15").max(15, "HbA1c must be between 3 and 15"),
+  bloodGlucoseLevel: z.coerce.number().min(50, "Blood glucose must be between 50 and 400").max(400, "Blood glucose must be between 50 and 400"),
 }).omit({
   id: true,
+  userId: true,
   riskScore: true,
   riskCategory: true,
   factors: true,

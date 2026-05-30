@@ -39,6 +39,12 @@ function generateOtp(): string {
   return randomInt(100000, 999999).toString();
 }
 
+function logDevOtp(email: string, otp: string) {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[DEV] OTP for ${email}: ${otp}`);
+  }
+}
+
 /**
  * Creates an authentication router with login, register, logout, and session-check endpoints.
  *
@@ -75,7 +81,12 @@ export function createAuthRouter(): Router {
       return res.status(409).json({ message: "An account with this email already exists." });
     }
 
-    registeredUsers.set(email, { fullName, email, password, licenseNumber });
+    registeredUsers.set(email, {
+      fullName,
+      email,
+      passwordHash: hashPassword(password),
+      licenseNumber
+    });
 
     const otp = generateOtp();
     pendingOtps.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
@@ -106,7 +117,7 @@ export function createAuthRouter(): Router {
       userName = "Dr. Smith";
     } else {
       const registeredUser = registeredUsers.get(email);
-      if (registeredUser && registeredUser.password === password) {
+      if (registeredUser && verifyPassword(password, registeredUser.passwordHash)) {
         userName = registeredUser.fullName;
       }
     }
