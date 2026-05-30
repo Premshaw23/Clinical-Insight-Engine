@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { randomInt } from "crypto";
+import bcrypt from "bcrypt";
 
 // Extend express-session to include user data
 declare module "express-session" {
@@ -14,8 +15,16 @@ declare module "express-session" {
 interface RegisteredUser {
   fullName: string;
   email: string;
-  password: string;
+  passwordHash: string;
   licenseNumber: string;
+}
+
+function hashPassword(password: string): string {
+  return bcrypt.hashSync(password, 10);
+}
+
+function verifyPassword(password: string, hash: string): boolean {
+  return bcrypt.compareSync(password, hash);
 }
 
 /**
