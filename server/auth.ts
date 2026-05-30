@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { randomInt } from "crypto";
+import bcrypt from "bcrypt";
 
 // Extend express-session to include user data
 declare module "express-session" {
@@ -14,8 +15,16 @@ declare module "express-session" {
 interface RegisteredUser {
   fullName: string;
   email: string;
-  password: string;
+  passwordHash: string;
   licenseNumber: string;
+}
+
+function hashPassword(password: string): string {
+  return bcrypt.hashSync(password, 10);
+}
+
+function verifyPassword(password: string, hash: string): boolean {
+  return bcrypt.compareSync(password, hash);
 }
 
 /**
@@ -81,7 +90,12 @@ export function createAuthRouter(): Router {
       return res.status(409).json({ message: "An account with this email already exists." });
     }
 
-    registeredUsers.set(email, { fullName, email, password, licenseNumber });
+    registeredUsers.set(email, {
+      fullName,
+      email,
+      passwordHash: hashPassword(password),
+      licenseNumber
+    });
 
     const otp = generateOtp();
     pendingOtps.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
@@ -112,7 +126,7 @@ export function createAuthRouter(): Router {
       userName = "Dr. Smith";
     } else {
       const registeredUser = registeredUsers.get(email);
-      if (registeredUser && registeredUser.password === password) {
+      if (registeredUser && verifyPassword(password, registeredUser.passwordHash)) {
         userName = registeredUser.fullName;
       }
     }

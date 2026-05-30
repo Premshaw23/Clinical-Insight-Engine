@@ -73,17 +73,20 @@ async function seedDatabase() {
   if (existing.length === 0) {
     console.log("Seeding database with sample assessments...");
 
+    const seedUserId = "seed@clinical-insight-engine.dev";
+
     const samples: AssessmentCreateInput[] = [
       {
+        createdBy: seedUserId,
         gender: "Male",
         age: 45,
         hypertension: false,
         heartDisease: false,
         smokingHistory: "never",
-        bmi: "24.5",
-        hba1cLevel: "5.2",
-        bloodGlucoseLevel: "95",
-        riskScore: "12.3",
+        bmi: 24.5,
+        hba1cLevel: 5.2,
+        bloodGlucoseLevel: 95,
+        riskScore: 12.3,
         riskCategory: "LOW",
         factors: [
           { name: "Age", impact: "positive", description: "Increases risk" },
@@ -95,15 +98,16 @@ async function seedDatabase() {
         createdBy: "drsmith@example.com"
       },
       {
+        createdBy: seedUserId,
         gender: "Female",
         age: 62,
         hypertension: true,
         heartDisease: false,
         smokingHistory: "former",
-        bmi: "31.2",
-        hba1cLevel: "6.8",
-        bloodGlucoseLevel: "145",
-        riskScore: "48.7",
+        bmi: 31.2,
+        hba1cLevel: 6.8,
+        bloodGlucoseLevel: 145,
+        riskScore: 48.7,
         riskCategory: "MODERATE",
         factors: [
           { name: "Hba1c Level", impact: "positive", description: "Increases risk" },
@@ -115,15 +119,16 @@ async function seedDatabase() {
         createdBy: "drsmith@example.com"
       },
       {
+        createdBy: seedUserId,
         gender: "Male",
         age: 58,
         hypertension: true,
         heartDisease: true,
         smokingHistory: "current",
-        bmi: "35.8",
-        hba1cLevel: "8.2",
-        bloodGlucoseLevel: "198",
-        riskScore: "76.4",
+        bmi: 35.8,
+        hba1cLevel: 8.2,
+        bloodGlucoseLevel: 198,
+        riskScore: 76.4,
         riskCategory: "HIGH",
         factors: [
           { name: "Hba1c Level", impact: "positive", description: "Increases risk" },
@@ -642,14 +647,14 @@ export async function registerRoutes(
 
         const assessment = await storage.createAssessment({
           ...input,
-          riskScore: String(prediction.riskScore),
+          riskScore: Number(prediction.riskScore),
           riskCategory: prediction.riskCategory,
           factors: prediction.factors,
           confidenceInterval: prediction.confidenceInterval ?? null,
           modelConfidence:
             prediction.modelConfidence == null
               ? undefined
-              : String(prediction.modelConfidence),
+              : Number(prediction.modelConfidence),
           createdBy: userId
         });
 
