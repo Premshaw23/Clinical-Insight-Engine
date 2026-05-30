@@ -181,6 +181,89 @@ export async function registerRoutes(
   }
 
   app.post(
+    api.assessments.preview.path,
+    requireAuth,
+    assessmentLimiter,
+    async (req, res) => {
+      try {
+        const input = api.assessments.preview.input.parse(req.body);
+
+        const tempFile = path.join(
+          os.tmpdir(),
+          `${randomUUID()}.json`
+        );
+
+        await writeFile(tempFile, JSON.stringify(input));
+
+        try {
+          const { stdout, stderr } = await execFileAsync(
+            getPythonExecutable(),
+            [analyzePyPath, "predict_file", tempFile],
+            {
+              timeout: 30000
+            }
+          );
+
+          let prediction;
+
+          try {
+            prediction = JSON.parse(stdout.trim());
+          } catch (e) {
+            console.error(
+              "Failed to parse python output (preview):",
+              stdout,
+              stderr
+            );
+            throw new Error("Failed to process prediction preview.");
+          }
+
+          if (prediction.error) {
+            return res.status(400).json({
+              message: prediction.error
+            });
+          }
+
+          return res.json({
+            riskScore: prediction.riskScore,
+            riskCategory: prediction.riskCategory,
+            factors: prediction.factors ?? [],
+            confidenceInterval: prediction.confidenceInterval ?? null,
+            modelConfidence: prediction.modelConfidence ?? null
+          });
+        } catch (error: any) {
+          console.error("Python ML preview execution failed:", error);
+
+          if (error.killed || error.signal === "SIGTERM") {
+            return res.status(408).json({
+              message: "Clinical assessment preview timed out."
+            });
+          }
+
+          return res.status(500).json({
+            message: "Failed to generate clinical preview."
+          });
+        } finally {
+          try {
+            await unlink(tempFile);
+          } catch (e) {}
+        }
+      } catch (err) {
+        if (err instanceof z.ZodError) {
+          return res.status(400).json({
+            message: err.errors[0].message
+          });
+        }
+
+        console.error("Error creating assessment preview:", err);
+
+        return res.status(500).json({
+          message: "Internal server error"
+        });
+      }
+    }
+  );
+
+  app.post(
     api.assessments.create.path,
     requireAuth,
     assessmentLimiter,
@@ -262,7 +345,8 @@ export async function registerRoutes(
             modelConfidence:
               prediction.modelConfidence == null
                 ? undefined
-                : Number(prediction.modelConfidence)
+                : Number(prediction.modelConfidence),
+            createdBy: userId
           });
 
           // Return both the DB assessment record and the rich prediction data
@@ -319,7 +403,8 @@ export async function registerRoutes(
 
   app.get(api.assessments.list.path, requireAuth, async (req, res) => {
     try {
-      const assessments = await storage.getAssessments();
+      const userEmail = req.session.user?.email;
+      const assessments = await storage.getAssessments(50, 0, userEmail);
 
       res.json(assessments);
 
