@@ -9,6 +9,27 @@ import { FileText, RotateCw } from "lucide-react";
 import { useLocation } from "wouter";
 import { advancedFilter } from "@/utils/search_filters";
 
+function HighlightText({ text, search }: { text: string; search: string }) {
+  if (!search.trim()) return <>{text}</>;
+  
+  const regex = new RegExp(`(${search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  
+  return (
+    <>
+      {parts.map((part, i) => 
+        regex.test(part) ? (
+          <mark key={i} className="bg-yellow-100 text-[#1E293B] rounded px-0.5 font-bold">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
 export default function History() {
   useEffect(() => {
     document.title = "Clinical Insight Engine - Assessment History";
@@ -20,10 +41,11 @@ export default function History() {
 
   const getRiskBadge = (category: string) => {
     const key = (category || "").toUpperCase();
-    if (key === "LOW") return <StatusPill variant="low" label="LOW" />;
-    if (key === "MODERATE") return <StatusPill variant="moderate" label="MODERATE" />;
-    if (key === "HIGH") return <StatusPill variant="high" label="HIGH" />;
-    return <StatusPill variant="default" label={category || "Unknown"} />;
+    const highlight = <HighlightText text={category} search={searchTerm} />;
+    if (key === "LOW") return <StatusPill variant="low" label="LOW" highlightedLabel={<HighlightText text="LOW" search={searchTerm} />} />;
+    if (key === "MODERATE") return <StatusPill variant="moderate" label="MODERATE" highlightedLabel={<HighlightText text="MODERATE" search={searchTerm} />} />;
+    if (key === "HIGH") return <StatusPill variant="high" label="HIGH" highlightedLabel={<HighlightText text="HIGH" search={searchTerm} />} />;
+    return <StatusPill variant="default" label={category || "Unknown"} highlightedLabel={highlight} />;
   };
 
   const [, setLocation] = useLocation();
@@ -117,8 +139,18 @@ export default function History() {
                 placeholder="Search history..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all w-full sm:w-64"
+                className="pl-10 pr-10 py-2.5 rounded-xl border border-border bg-card focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all w-full sm:w-64"
               />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-0.5 rounded-full hover:bg-muted"
+                  aria-label="Clear search query"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <select
               value={sortBy}
@@ -151,9 +183,13 @@ export default function History() {
             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4 text-muted-foreground">
               <Activity className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">No Assessments Found</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              {searchTerm ? "No Matching Records" : "No Assessments Found"}
+            </h3>
             <p className="text-muted-foreground max-w-md">
-              There are no patient assessments matching your criteria. Go to the dashboard to create a new assessment.
+              {searchTerm 
+                ? `No patient records matching "${searchTerm}" were found. Try refining your search terms.` 
+                : "There are no patient assessments matching your criteria. Go to the dashboard to create a new assessment."}
             </p>
           </div>
         ) : (
@@ -181,13 +217,13 @@ export default function History() {
                       <td className="p-4 whitespace-nowrap">
                         {formatAssessmentDate(assessment.createdAt)}
                       </td>
-                      <td className="p-4">{assessment.age}</td>
-                      <td className="p-4 font-medium">{assessment.bmi}</td>
-                      <td className="p-4 font-medium">{assessment.hba1cLevel}%</td>
-                      <td className="p-4 font-medium">{assessment.bloodGlucoseLevel}</td>
+                      <td className="p-4"><HighlightText text={String(assessment.age)} search={searchTerm} /></td>
+                      <td className="p-4 font-medium"><HighlightText text={String(assessment.bmi)} search={searchTerm} /></td>
+                      <td className="p-4 font-medium"><HighlightText text={String(assessment.hba1cLevel)} search={searchTerm} />%</td>
+                      <td className="p-4 font-medium"><HighlightText text={String(assessment.bloodGlucoseLevel)} search={searchTerm} /></td>
                       <td className="p-4">{assessment.hypertension ? 'Yes' : 'No'}</td>
                       <td className="p-4">{assessment.heartDisease ? 'Yes' : 'No'}</td>
-                      <td className="p-4">{assessment.smokingHistory}</td>
+                      <td className="p-4"><HighlightText text={assessment.smokingHistory} search={searchTerm} /></td>
                       <td className="p-4">
                         <div className="font-bold flex items-center gap-3">
                           <span>{Number(assessment.riskScore).toFixed(1)}%</span>

@@ -37,6 +37,11 @@ export default function LoginPage() {
       return;
     }
     setErrors({});
+    if (rememberMe) {
+      localStorage.setItem("rememberedEmail", email);
+    } else {
+      localStorage.removeItem("rememberedEmail");
+    }
     setIsLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
