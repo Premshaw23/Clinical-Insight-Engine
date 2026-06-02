@@ -48,7 +48,7 @@ export const insertAssessmentSchema = createInsertSchema(assessments, {
     .max(120, "Age must be 120 or below"),
   hypertension: z.boolean({ invalid_type_error: "Hypertension must be true or false" }).default(false),
   heartDisease: z.boolean({ invalid_type_error: "Heart disease must be true or false" }).default(false),
-  smokingHistory: z.enum(["never", "No Info", "current", "former"], {
+  smokingHistory: z.enum(["never", "No Info", "current", "former", "ever", "not current"], {
     required_error: "Smoking history is required",
     invalid_type_error: "Invalid smoking history value",
   }),
