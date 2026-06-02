@@ -125,6 +125,14 @@ export function createAuthRouter(): Router {
       return res.status(400).json({ message: "Password must be at least 8 characters." });
     }
 
+    if (fullName.length > 255) {
+      return res.status(400).json({ message: "Full name must be 255 characters or less." });
+    }
+
+    if (licenseNumber.length > 100) {
+      return res.status(400).json({ message: "Medical license number must be 100 characters or less." });
+    }
+
     // Check DB for existing user
     try {
       const db = getDb();
