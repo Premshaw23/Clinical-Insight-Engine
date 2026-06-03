@@ -23,6 +23,8 @@ import StatusPill from "@/components/ui/StatusPill";
 import ConfidenceRange from "@/components/ui/ConfidenceRange";
 import { FileText, RotateCw } from "lucide-react";
 import { useLocation } from "wouter";
+import { type AssessmentResponse } from "@shared/routes";
+import { downloadClinicalAssessmentPdf } from "@/utils/clinicalPdfReport";
 import { advancedFilter } from "@/utils/search_filters";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import RiskTrendChart from "@/components/RiskTrendChart";
