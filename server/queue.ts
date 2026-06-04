@@ -33,7 +33,7 @@ export const redisConnection = new IORedis(process.env.REDIS_URL || "redis://loc
 });
 
 export const assessmentQueue = new Queue("assessmentQueue", {
-  connection: redisConnection,
+  connection: redisConnection as any,
 });
 
 const execFileAsync = promisify(execFile);
@@ -89,7 +89,7 @@ export const assessmentWorker = new Worker(
     }
   },
   {
-    connection: redisConnection,
+    connection: redisConnection as any,
     concurrency: 4,
   }
 );
