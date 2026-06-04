@@ -1,7 +1,7 @@
 import { logger } from "../logger";
 import { Router } from "express";
 import { z } from "zod";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { requireAuth, requireVerified } from "../auth";
 import { api } from "@shared/routes";
 import { storage } from "../storage";
@@ -228,7 +228,7 @@ assessmentsRouter.get(
 
       return res.json(results);
     } catch (err) {
-      logger.error("Assessment search error:", err);
+      logger.error({ err }, "Assessment search error:");
       const { statusCode, message } = sanitizeDatabaseError(err);
       return res.status(statusCode).json({ message });
     }
@@ -272,7 +272,7 @@ assessmentsRouter.get(
       logAccessAttempt((user as any).id, "Assessment", id, true, "Authorized access");
       return res.json(assessment);
     } catch (err) {
-      logger.error("Assessment fetch error:", err);
+      logger.error({ err }, "Assessment fetch error:");
       const { statusCode, message } = sanitizeDatabaseError(err);
       return res.status(statusCode).json({ message });
     }
