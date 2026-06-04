@@ -41,7 +41,7 @@ const execFileAsync = promisify(execFile);
 export const assessmentWorker = new Worker(
   "assessmentQueue",
   async (job: Job) => {
-    const { input, isPreview } = job.data;
+    const { input, isPreview, userId } = job.data;
     const tempFile = path.join(os.tmpdir(), `${randomUUID()}.json`);
 
     try {
