@@ -182,6 +182,17 @@ const previewLimiter = rateLimit({
   },
 });
 
+const previewLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error: "Too many assessment preview requests. Please try again later.",
+    retryAfter: 60,
+  },
+});
+
 export function getPythonExecutable() {
   const candidates =
     process.platform === "win32"
@@ -665,19 +676,31 @@ export async function registerRoutes(
     }
   );
 
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", "attachment; filename=assessments.csv");
+        return res.send(csv);
+      } catch (err) {
+        console.error("Assessment CSV export error:", err);
+        return res.status(500).json({
+          message: "Failed to export assessments"
+        });
+      }
+    }
+  );
+
   /**
    * GET /api/assessments/search
    *
    * Secure patient/assessment search endpoint.
    *
    * Security controls:
-   * 1. PRIMARY: Drizzle ORM ilike()/eq() — query parameters are bound placeholders,
-   *    never interpolated into raw SQL strings.  This prevents SQL injection.
+   * 1. PRIMARY: Drizzle ORM ilike()/eq() - query parameters are bound placeholders,
+   *    never interpolated into raw SQL strings. This prevents SQL injection.
    * 2. SUPPLEMENTARY: Zod schema validates input length, character set, and rejects
    *    known injection signatures before the query is even constructed.
-   * 3. Security logging: suspicious patterns are logged (without PHI) for audit.
+   * 3. Security logging: suspicious patterns are logged without PHI for audit.
    * 4. User scoping: results are always filtered to the authenticated user's records.
-   * 5. Generic errors: DB errors are sanitized — no table names or SQL syntax leaked.
+   * 5. Generic errors: DB errors are sanitized.
    *
    * Query params:
    *   q            - search term (max 200 chars, safe characters only)
@@ -691,11 +714,9 @@ export async function registerRoutes(
     requireVerified,
     async (req, res) => {
       try {
-        // 1. Validate and parse query parameters
         const parseResult = searchQuerySchema.safeParse(req.query);
 
         if (!parseResult.success) {
-          // Check whether the failure looks like an injection attempt
           const rawQ = typeof req.query.q === "string" ? req.query.q : "";
           const analysis = analyzeSearchInput(rawQ);
 
@@ -729,11 +750,9 @@ export async function registerRoutes(
         const offset = (page - 1) * limit;
         const userEmail = req.session.user?.email;
 
-        // 2. Log suspicious-but-valid patterns for monitoring
         if (q) {
           const analysis = analyzeSearchInput(q);
           if (!analysis.safe) {
-            // Validation already rejected this above, but log defensively
             logSecurityEvent(
               "SUSPICIOUS_SEARCH_PATTERN",
               "Validated search term contains a suspicious pattern",
@@ -746,7 +765,6 @@ export async function registerRoutes(
           }
         }
 
-        // 3. Execute parameterized search — Drizzle ORM sends $1, $2 … placeholders
         const results = await storage.searchAssessments(
           q ?? "",
           userEmail,
@@ -756,9 +774,7 @@ export async function registerRoutes(
         );
 
         return res.json(results);
-
       } catch (err) {
-        // 4. Sanitize DB errors — never expose table names, SQL syntax, or stack traces
         console.error("Assessment search error:", err);
         const { statusCode, message } = sanitizeDatabaseError(err);
         return res.status(statusCode).json({ message });
@@ -770,9 +786,7 @@ export async function registerRoutes(
    * GET /api/assessments/:id
    *
    * Fetch a single assessment by numeric ID.
-   * Results are scoped to the authenticated user to prevent cross-user data access.
-   *
-   * Security: uses Drizzle ORM eq() with bound parameters — not string-concatenated.
+   * Object-level authorization is enforced explicitly before returning records.
    */
   app.get(
     "/api/assessments/:id",
@@ -791,11 +805,9 @@ export async function registerRoutes(
           return res.status(401).json({ message: "Unauthorized" });
         }
 
-        // Fetch the record regardless of owner
         const assessment = await storage.getAssessmentById(id);
 
         if (!assessment) {
-          // Normal 404
           return res.status(404).json({ message: "Assessment not found." });
         }
 
